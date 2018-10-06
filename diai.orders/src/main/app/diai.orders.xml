@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+<http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    <file:file-to-string-transformer name="File_to_String" doc:name="File to String"/>
+    <file:connector name="File" autoDelete="true" streaming="true" validateConnections="true" doc:name="File"/>
+    
+    <flow name="entrada">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/entrada" doc:name="HTTP"/>
+        <http:static-resource-handler resourceBase="docroot" defaultFile="index.html" doc:name="HTTP Static Resource Handler"/>
+    </flow>
+    <flow name="EntradaHTTP">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/facturacion" doc:name="HTTP"/>
+        <set-payload value="#[message.inboundProperties.'http.query.params']" doc:name="get.queryparams"/>
+        <component class="diai.mule.transformers.HttpQueryToOrden" doc:name="http.to.orden"/>
+        <echo-component doc:name="Echo"/>
+        <vm:outbound-endpoint exchange-pattern="request-response" path="stock.check" doc:name="VM.process.stock"/>
+    </flow>
+    <flow name="diai.stock.check">
+        <composite-source doc:name="Composite Source">
+            <vm:inbound-endpoint exchange-pattern="one-way" path="stock.check" doc:name="VM.processs.stock"/>
+        </composite-source>
+        <splitter expression="#[payload.getProductos()]" doc:name="Splitter"/>
+        <echo-component doc:name="Echo"/>
+        <component class="diai.mule.components.ProcessOrderLine" doc:name="Java"/>
+        <choice doc:name="Choice">
+        <when expression="#[payload.getAvailable()]">
+                <vm:outbound-endpoint exchange-pattern="request-response" path="processOrder" doc:name="VM.processOrder"/>
+            </when>
+            <otherwise>
+                <vm:outbound-endpoint exchange-pattern="request-response" path="rejectStock" doc:name="VM.rejectStock"/>
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="diai.orders.reject">
+        <composite-source doc:name="Composite Source">
+            <vm:inbound-endpoint exchange-pattern="one-way" path="rejectStock" doc:name="VM.rejectOperation"/>
+        </composite-source>
+        <component class="diai.mule.components.RejectOrder" doc:name="Java"/>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="processOrder" doc:name="VM.finishReject"/>
+    </flow>
+    <flow name="diai.orders.process">
+        <composite-source doc:name="Composite Source">
+            <vm:inbound-endpoint exchange-pattern="one-way" path="processOrder" doc:name="VM.processOperation"/>
+        </composite-source>
+        <collection-aggregator failOnTimeout="true" doc:name="Collection Aggregator"/>
+        <echo-component doc:name="Echo"/>
+        <component class="diai.mule.components.CalculateDebt" doc:name="Calculate debt"/>
+        <choice doc:name="Choice">
+            <when expression="#[payload.getClient().getDebt() &gt; 2000]">
+                <component class="diai.mule.components.EmitSheet" doc:name="Java"/>
+            </when>
+            <otherwise>
+                <echo-component doc:name="Echo"/>
+            </otherwise>
+        </choice>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="processOrder" doc:name="VM.finishProcess"/>
+    </flow>
+</mule>
