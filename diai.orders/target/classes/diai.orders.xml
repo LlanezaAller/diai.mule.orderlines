@@ -13,17 +13,31 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
 <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
-    <file:file-to-string-transformer name="File_to_String" doc:name="File to String"/>
-    <file:connector name="File" autoDelete="true" streaming="true" validateConnections="true" doc:name="File"/>
+    <file:file-to-string-transformer name="File_to_String1" doc:name="File to String"/>
+    <custom-transformer class="diai.mule.transformers.FileToOrder" name="FileToOrder" doc:name="Java"/>
+    <file:file-to-string-transformer name="FileToString" doc:name="File to String"/>
     
     <flow name="entrada">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/entrada" doc:name="HTTP"/>
         <http:static-resource-handler resourceBase="docroot" defaultFile="index.html" doc:name="HTTP Static Resource Handler"/>
     </flow>
+    <flow name="diai.ordersFlow">
+        <composite-source doc:name="Composite Source">
+            <file:inbound-endpoint path="./csv" responseTimeout="10000" doc:name="File" transformer-refs="FileToString FileToOrder"/>
+        </composite-source>
+        <collection-splitter doc:name="Collection Splitter"/>
+        <vm:outbound-endpoint exchange-pattern="request-response" path="entrada" doc:name="VM.entrada.send"/>
+    </flow>
     <flow name="EntradaHTTP">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/facturacion" doc:name="HTTP"/>
         <set-payload value="#[message.inboundProperties.'http.query.params']" doc:name="get.queryparams"/>
         <component class="diai.mule.transformers.HttpQueryToOrden" doc:name="http.to.orden"/>
+        <vm:outbound-endpoint exchange-pattern="request-response" path="entrada" doc:name="VM.entrada.send"/>
+    </flow>
+    <flow name="diai.ordersFlow1">
+        <composite-source doc:name="Composite Source">
+            <vm:inbound-endpoint exchange-pattern="request-response" path="entrada" doc:name="VM.entrada.source"/>
+        </composite-source>
         <echo-component doc:name="Echo"/>
         <component class="diai.mule.components.LoadClientInfo" doc:name="Load.Client.Info"/>
         <vm:outbound-endpoint exchange-pattern="request-response" path="stock.check" doc:name="VM.process.stock.send"/>

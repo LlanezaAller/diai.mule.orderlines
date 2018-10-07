@@ -66,6 +66,7 @@ public class LoadClientInfo implements Callable {
 			if (dataInput != null) {
 				try {
 					dataInput.close();
+					debtInput.close();
 
 					FileOutputStream outData = new FileOutputStream(DATAFILEPATH);
 					FileOutputStream outDebt = new FileOutputStream(DEBTPATH);
