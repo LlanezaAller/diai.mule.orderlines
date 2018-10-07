@@ -26,44 +26,44 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
         <component class="diai.mule.transformers.HttpQueryToOrden" doc:name="http.to.orden"/>
         <echo-component doc:name="Echo"/>
         <component class="diai.mule.components.LoadClientInfo" doc:name="Load.Client.Info"/>
-        <vm:outbound-endpoint exchange-pattern="request-response" path="stock.check" doc:name="VM.process.stock"/>
+        <vm:outbound-endpoint exchange-pattern="request-response" path="stock.check" doc:name="VM.process.stock.send"/>
     </flow>
     <flow name="diai.stock.check">
         <composite-source doc:name="Composite Source">
-            <vm:inbound-endpoint exchange-pattern="one-way" path="stock.check" doc:name="VM.processs.stock"/>
+            <vm:inbound-endpoint exchange-pattern="one-way" path="stock.check" doc:name="VM.processs.stock.source"/>
         </composite-source>
         <splitter expression="#[payload.getProductos()]" doc:name="Splitter"/>
         <echo-component doc:name="Echo"/>
         <component class="diai.mule.components.ProcessOrderLine" doc:name="process.order"/>
         <choice doc:name="Choice">
         <when expression="#[payload.getAvailable()]">
-                <vm:outbound-endpoint exchange-pattern="request-response" path="processOrder" doc:name="VM.processOrder"/>
+                <vm:outbound-endpoint exchange-pattern="request-response" path="process" doc:name="VM.processOrder.send"/>
             </when>
             <otherwise>
-                <vm:outbound-endpoint exchange-pattern="request-response" path="rejectStock" doc:name="VM.rejectStock"/>
+                <vm:outbound-endpoint exchange-pattern="request-response" path="rejectStock" doc:name="VM.rejectStock.send"/>
             </otherwise>
         </choice>
     </flow>
     <flow name="diai.orders.reject">
         <composite-source doc:name="Composite Source">
-            <vm:inbound-endpoint exchange-pattern="one-way" path="rejectStock" doc:name="VM.rejectOperation"/>
+            <vm:inbound-endpoint exchange-pattern="one-way" path="rejectStock" doc:name="VM.rejectOperation.source"/>
         </composite-source>
         <component class="diai.mule.components.RejectOrder" doc:name="reject.component"/>
-        <vm:outbound-endpoint exchange-pattern="one-way" path="processOrder" doc:name="VM.finishReject"/>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="processOrder" doc:name="VM.finishReject.send"/>
     </flow>
     <flow name="diai.orders.process">
         <composite-source doc:name="Composite Source">
-            <vm:inbound-endpoint exchange-pattern="one-way" path="processOrder" doc:name="VM.processOperation"/>
+            <vm:inbound-endpoint exchange-pattern="one-way" path="process" doc:name="VM.processOperation.source"/>
         </composite-source>
         <collection-aggregator failOnTimeout="true" doc:name="Collection Aggregator"/>
         <echo-component doc:name="Echo"/>
         <component class="diai.mule.transformers.CollectionToOrder" doc:name="Collection.to.Order"/>
         <choice doc:name="Choice">
             <when expression="#[payload.getFinanciacion()]">
-                <vm:outbound-endpoint exchange-pattern="one-way" path="financiacion" doc:name="VM.financiacion"/>
+                <vm:outbound-endpoint exchange-pattern="one-way" path="financiacion" doc:name="VM.financiacion.send"/>
             </when>
             <otherwise>
-                <vm:outbound-endpoint exchange-pattern="one-way" path="processOrder" doc:name="VM.finishProcess"/>
+                <vm:outbound-endpoint exchange-pattern="one-way" path="processOrder" doc:name="VM.finishProcess.send"/>
             </otherwise>
         </choice>
     </flow>
@@ -86,7 +86,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
     </flow>
     <flow name="diai.orders.processOrder">
         <composite-source doc:name="Composite Source">
-            <vm:inbound-endpoint exchange-pattern="one-way" path="processOrder" doc:name="VM.ProcessOrder"/>
+            <vm:inbound-endpoint exchange-pattern="one-way" path="processOrder" doc:name="VM.ProcessOrder.source"/>
         </composite-source>
         <choice doc:name="Client.Vip">
             <when expression="#[payload.getClient().getLastMonth &gt;2000]">

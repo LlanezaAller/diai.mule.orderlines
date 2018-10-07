@@ -9,17 +9,16 @@ import org.mule.api.lifecycle.Callable;
 import diai.mule.entities.Order;
 import diai.mule.entities.StockOrder;
 
-public class CollectionToOrder implements Callable {
+public class CollectionToOrder{
 
 	private final static String DEBTPATH = "src/debt.properties";
 
-	@Override
-	public Object onCall(@Payload MuleEventContext eventContext) throws Exception {
-		System.out.println(eventContext.getMessage().getPayload());
+	public Object onCall(@Payload Object src) throws Exception {
+		System.out.println("[[[[[[[" + src.getClass());
 		Order order = new Order();
 
-		if (eventContext.getMessage().getPayload() instanceof List<?>) {
-			List<StockOrder> stockOrders = (List<StockOrder>) eventContext.getMessage().getPayload();
+		if (src instanceof List<?>) {
+			List<StockOrder> stockOrders = (List<StockOrder>) src;
 
 			SetOrdersFromMessages(order, stockOrders);
 

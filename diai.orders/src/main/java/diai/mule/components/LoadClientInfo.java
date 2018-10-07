@@ -1,6 +1,7 @@
 package diai.mule.components;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -8,8 +9,7 @@ import java.util.Properties;
 import org.mule.api.MuleEventContext;
 import org.mule.api.lifecycle.Callable;
 
-import de.schlichtherle.io.FileOutputStream;
-import diai.mule.entities.StockOrder;
+import diai.mule.entities.Order;
 
 public class LoadClientInfo implements Callable {
 
@@ -17,7 +17,7 @@ public class LoadClientInfo implements Callable {
 	
 	@Override
 	public Object onCall(MuleEventContext eventContext) throws Exception {
-		StockOrder order = (StockOrder) eventContext.getMessage().getPayload();
+		Order order = (Order) eventContext.getMessage().getPayload();
 		
 		Properties dataProp = new Properties();
 		InputStream dataInput = null;
@@ -29,7 +29,7 @@ public class LoadClientInfo implements Callable {
 			// load a properties file
 			dataProp.load(dataInput);
 			
-			Double amount = (Double) dataProp.get(order.getClient().getDni());
+			Double amount = Double.parseDouble(dataProp.get(order.getClient().getDni()).toString());
 			
 			order.getClient().setLastMonth(amount);
 

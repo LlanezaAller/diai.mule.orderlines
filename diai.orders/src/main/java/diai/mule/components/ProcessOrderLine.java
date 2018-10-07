@@ -1,6 +1,7 @@
 package diai.mule.components;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -8,7 +9,6 @@ import java.util.Properties;
 import org.mule.api.MuleEventContext;
 import org.mule.api.lifecycle.Callable;
 
-import de.schlichtherle.io.FileOutputStream;
 import diai.mule.entities.StockOrder;
 
 public class ProcessOrderLine implements Callable {
