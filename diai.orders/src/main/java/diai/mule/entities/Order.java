@@ -47,7 +47,9 @@ public class Order {
 			StockOrder newStockOrder = new StockOrder();
 			
 			newStockOrder.setAmount(string2);
-			newStockOrder.getClient().setDni(client.getDni());
+			newStockOrder.setClient(new Client());
+			newStockOrder.getClient().setNombre(this.client.getNombre());
+			newStockOrder.getClient().setDni(this.client.getDni());
 			newStockOrder.setIsbn(string);
 			newStockOrder.setFinancia(getFinanciacion());
 			
