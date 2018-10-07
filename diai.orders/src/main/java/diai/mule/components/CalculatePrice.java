@@ -13,25 +13,30 @@ import diai.mule.entities.StockOrder;
 
 public class CalculatePrice {
 	private final static String PRICESPATH = "src/prices.properties";
+	private static final String MONEYPATH = "src/clientmoney.properties";
 
 	public Order calculate(@Payload Order order) {
-		
+
 		order.setCash(calculateFacture(order));
-		
+
 		return order;
 	}
-	
+
 	private Double calculateFacture(Order order) {
 		Double result = 0.0;
 		Properties dataProp = new Properties();
+		Properties moneyProp = new Properties();
 		InputStream dataInput = null;
+		InputStream moneyInput = null;
 
 		try {
 
 			dataInput = new FileInputStream(PRICESPATH);
+			moneyInput = new FileInputStream(MONEYPATH);
 
 			// load a properties file
 			dataProp.load(dataInput);
+			moneyProp.load(moneyInput);
 
 			for (String key : order.getProductos().keySet()) {
 				StockOrder stock = order.getProductos().get(key);
@@ -41,19 +46,33 @@ public class CalculatePrice {
 					result += stock.getAmount() * price;
 				}
 			}
+			Object moneyRaw = moneyProp.get(order.getClient().getDni());
+
+			Double moneyAmount = 0.0;
+
+			if (moneyRaw != null) {
+				moneyAmount = Double.parseDouble(moneyRaw.toString());
+				moneyAmount += result;
+			}
+
+			moneyProp.setProperty(order.getClient().getDni(), moneyAmount.toString());
 			order.setCash(result);
 
 		} catch (IOException ex) {
 			ex.printStackTrace();
-		}catch (Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
-		}finally {
+		} finally {
 			if (dataInput != null) {
 				try {
 					dataInput.close();
+					moneyInput.close();
 
-					FileOutputStream out = new FileOutputStream(PRICESPATH);
-					dataProp.store(out, null);
+					FileOutputStream outData = new FileOutputStream(PRICESPATH);
+					FileOutputStream outMoney = new FileOutputStream(MONEYPATH);
+					dataProp.store(outData, null);
+					moneyProp.store(outMoney, null);
+
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

@@ -50,6 +50,8 @@ public class Order {
 			newStockOrder.setClient(new Client());
 			newStockOrder.getClient().setNombre(this.client.getNombre());
 			newStockOrder.getClient().setDni(this.client.getDni());
+			newStockOrder.getClient().setDebt(this.client.getDebt());
+			newStockOrder.getClient().setLastMonth(this.client.getLastMonth());
 			newStockOrder.setIsbn(string);
 			newStockOrder.setFinancia(getFinanciacion());
 			

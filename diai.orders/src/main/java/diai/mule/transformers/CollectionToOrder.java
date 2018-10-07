@@ -3,8 +3,6 @@ package diai.mule.transformers;
 import java.util.Collection;
 import java.util.List;
 
-import org.mule.api.annotations.param.Payload;
-import org.mule.api.transformer.TransformerException;
 import org.mule.transformer.AbstractTransformer;
 import org.mule.transformer.types.DataTypeFactory;
 
@@ -19,7 +17,6 @@ public class CollectionToOrder extends AbstractTransformer {
 		this.setReturnDataType(DataTypeFactory.create(Order.class));
 	}
 
-	private final static String DEBTPATH = "src/debt.properties";
 
 	@Override
 	protected Object doTransform(Object src, String encoding) {

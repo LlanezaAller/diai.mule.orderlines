@@ -73,15 +73,15 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
             <vm:inbound-endpoint exchange-pattern="request-response" path="financiacion" doc:name="VM.financiacion.source"/>
         </composite-source>
         <choice doc:name="Choice">
-            <when expression="#[payload.getClient().getDebt() &gt;= 2000]">
+            <when expression="#[payload.getClient().getDebt() &lt; 2000]">
                 <component class="diai.mule.components.DoFinance" doc:name="Do.finance"/>
+                <component class="diai.mule.components.CalculateDebt" doc:name="Calculate debt"/>
             </when>
             <otherwise>
                 <component class="diai.mule.components.RejectFinance" doc:name="rejectFinance"/>
             </otherwise>
         </choice>
         <echo-component doc:name="Echo"/>
-        <component class="diai.mule.components.CalculateDebt" doc:name="Calculate debt"/>
         <vm:outbound-endpoint exchange-pattern="request-response" path="processOrder" doc:name="VM.finishProcess"/>
     </flow>
     <flow name="diai.orders.processOrder">
@@ -90,7 +90,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
         </composite-source>
         <component class="diai.mule.components.EmitSheet" doc:name="emit.sheet"/>
         <choice doc:name="Client.Vip">
-            <when expression="#[payload.getClient().getLastMonth &gt;2000]">
+            <when expression="#[payload.getClient().getLastMonth() &gt;2000.0]">
                 <component class="diai.mule.components.GenerateVipSend" doc:name="GenerateVIPSend"/>
             </when>
             <otherwise>

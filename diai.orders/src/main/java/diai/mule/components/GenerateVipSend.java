@@ -7,7 +7,7 @@ import diai.mule.entities.StockOrder;
 
 public class GenerateVipSend {
 	
-	private final static String template = "Boletín de envío VIP:\nCliente: %s\n%sTOTAL: %f";
+	private final static String template = "Boletín de envio VIP:\nCliente: %s\n%sTOTAL: %f";
 	
 	public String generateVIPSend(@Payload Order order) {
 

@@ -7,7 +7,7 @@ import diai.mule.entities.StockOrder;
 
 public class GenerateSend {
 	
-	private final static String template = "Boletín de envío común:\nCliente: %s\n%sTOTAL: %f";
+	private final static String template = "Boletín de envío comun:\nCliente: %s\n%sTOTAL: %f";
 	
 	public String generateSend(@Payload Order order) {
 
