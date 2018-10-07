@@ -4,8 +4,17 @@ public class Client {
 	private String nombre;
 	private String dni;
 	private Double debt;
+	private Double lastMonth;
 
 	public Client() {
+	}
+
+	public Double getLastMonth() {
+		return lastMonth;
+	}
+
+	public void setLastMonth(Double lastMonth) {
+		this.lastMonth = lastMonth;
 	}
 
 	public Double getDebt() {

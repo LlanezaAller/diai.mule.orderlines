@@ -9,16 +9,16 @@ import org.mule.api.MuleEventContext;
 import org.mule.api.lifecycle.Callable;
 
 import de.schlichtherle.io.FileOutputStream;
-import diai.mule.entities.Order;
+import diai.mule.entities.StockOrder;
 
-public class StockCheck implements Callable {
+public class LoadClientInfo implements Callable {
 
-	private static final String DATAFILEPATH = "src/stock.properties";
-
+	private static final String DATAFILEPATH = "src/clientmoney.properties";
+	
 	@Override
 	public Object onCall(MuleEventContext eventContext) throws Exception {
-
-		Order orden = (Order) eventContext.getMessage().getPayload();
+		StockOrder order = (StockOrder) eventContext.getMessage().getPayload();
+		
 		Properties dataProp = new Properties();
 		InputStream dataInput = null;
 
@@ -28,6 +28,10 @@ public class StockCheck implements Callable {
 
 			// load a properties file
 			dataProp.load(dataInput);
+			
+			Double amount = (Double) dataProp.get(order.getClient().getDni());
+			
+			order.getClient().setLastMonth(amount);
 
 		} catch (IOException ex) {
 			ex.printStackTrace();
@@ -43,8 +47,8 @@ public class StockCheck implements Callable {
 				}
 			}
 		}
-
-		return null;
+		
+		return order;
 	}
 
 }

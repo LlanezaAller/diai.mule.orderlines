@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.mule.api.MuleEventContext;
 import org.mule.api.lifecycle.Callable;
 
+import de.schlichtherle.io.FileOutputStream;
 import diai.mule.entities.StockOrder;
 
 public class ProcessOrderLine implements Callable {
@@ -46,6 +47,10 @@ public class ProcessOrderLine implements Callable {
 			if (dataInput != null) {
 				try {
 					dataInput.close();
+					
+					FileOutputStream out = new FileOutputStream(DATAFILEPATH);
+					dataProp.store(out, null);
+					
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

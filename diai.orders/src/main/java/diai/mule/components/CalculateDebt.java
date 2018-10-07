@@ -10,6 +10,7 @@ import org.mule.api.MuleEventContext;
 import org.mule.api.annotations.param.Payload;
 import org.mule.api.lifecycle.Callable;
 
+import de.schlichtherle.io.FileOutputStream;
 import diai.mule.entities.Order;
 import diai.mule.entities.StockOrder;
 
@@ -20,12 +21,10 @@ public class CalculateDebt implements Callable {
 	@Override
 	public Object onCall(@Payload MuleEventContext eventContext) throws Exception {
 		System.out.println(eventContext.getMessage().getPayload());
-			Order order = new Order();
+		Order order = new Order();
 			
-		if (eventContext.getMessage().getPayload() instanceof List<?>) {
-			List<StockOrder> stockOrders = (List<StockOrder>) eventContext.getMessage().getPayload();
-
-			SetOrdersFromMessages(order, stockOrders);
+		if (eventContext.getMessage().getPayload() instanceof Order) {
+			order = (Order) eventContext.getMessage().getPayload();
 			
 			Properties dataProp = new Properties();
 			InputStream dataInput = null;
@@ -36,6 +35,17 @@ public class CalculateDebt implements Callable {
 
 				// load a properties file
 				dataProp.load(dataInput);
+				
+				
+				Object debtRAW = dataProp.get(order.getClient().getDni());
+				if(debtRAW != null) {
+					Double actualDebt = (Double) debtRAW;
+					actualDebt += calculateFacture(order);
+					dataProp.setProperty(order.getClient().getDni(), actualDebt.toString());
+				}else {
+					
+				}
+				
 
 			} catch (IOException ex) {
 				ex.printStackTrace();
@@ -43,6 +53,9 @@ public class CalculateDebt implements Callable {
 				if (dataInput != null) {
 					try {
 						dataInput.close();
+						
+						FileOutputStream out = new FileOutputStream(DEBTPATH);
+						dataProp.store(out, null);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -52,16 +65,10 @@ public class CalculateDebt implements Callable {
 		}
 		return order;
 	}
-
-	private void SetOrdersFromMessages(Order order, List<StockOrder> stockOrders) {
-		if (stockOrders.size() > 0)
-			order.setClient(stockOrders.get(0).getClient());
-
-		stockOrders.forEach(so -> {
-			if (so.getAvailable())
-				order.addProducto(so.getIsbn(), so);
-
-		});
+	
+	private Double calculateFacture(Order order) {
+		
+		return null;
 	}
 
 	
