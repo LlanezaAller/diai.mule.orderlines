@@ -7,9 +7,18 @@ public class Order {
 	protected Client client = new Client();
 	protected Boolean financiacion;
 	protected HashMap<String, StockOrder> productos = new HashMap<String, StockOrder>();
+	protected Double cash;
 	
 	public Client getClient() {
 		return client;
+	}
+
+	public Double getCash() {
+		return cash;
+	}
+
+	public void setCash(Double cash) {
+		this.cash = cash;
 	}
 
 	public void setClient(Client client) {

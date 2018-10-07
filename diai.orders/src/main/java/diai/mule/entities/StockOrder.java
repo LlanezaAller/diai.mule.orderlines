@@ -3,6 +3,7 @@ package diai.mule.entities;
 public class StockOrder {
 	
 	private int amount;
+	private Double price;
 	private Client client = new Client();
 	private String isbn;
 	private Boolean financia;
@@ -10,6 +11,12 @@ public class StockOrder {
 	
 	
 	
+	public Double getPrice() {
+		return price;
+	}
+	public void setPrice(Double price) {
+		this.price = price;
+	}
 	public Boolean getFinancia() {
 		return financia;
 	}
